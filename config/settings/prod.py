@@ -21,8 +21,9 @@ DATABASES = {
     }
 }
 
-# Security settings
-SECURE_SSL_REDIRECT = True
+
+SECURE_SSL_REDIRECT = False  # Azure handles SSL, not Django
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Trust Azure's SSL
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
