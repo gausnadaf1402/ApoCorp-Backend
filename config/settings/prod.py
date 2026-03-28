@@ -22,6 +22,12 @@ DATABASES = {
 }
 
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://apocorp-backend-fudtbranbbh8c4e5.centralindia-01.azurewebsites.net',
+    'https://apo-corp-frontend.vercel.app',
+]
+
+
 SECURE_SSL_REDIRECT = False  # Azure handles SSL, not Django
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Trust Azure's SSL
 SESSION_COOKIE_SECURE = True
