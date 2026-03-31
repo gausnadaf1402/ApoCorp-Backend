@@ -41,10 +41,21 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Azure Blob Storage
-DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+# With this:
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.azure_storage.AzureStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 AZURE_ACCOUNT_NAME = config('AZURE_STORAGE_ACCOUNT_NAME')
 AZURE_ACCOUNT_KEY = config('AZURE_STORAGE_ACCOUNT_KEY')
 AZURE_CONTAINER = 'media'
 AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
 MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/media/'
+
+# prod.py
+AZURE_OVERWRITE_FILES = True
