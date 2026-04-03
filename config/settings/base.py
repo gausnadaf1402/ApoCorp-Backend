@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.reports',
     'apps.products',
     "apps.custom_reports", 
+    'apps.documents',
 
     'storages',
 ]

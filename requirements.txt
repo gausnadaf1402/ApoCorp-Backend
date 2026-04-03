@@ -8,3 +8,5 @@ Pillow
 whitenoise
 gunicorn
 django-storages[azure]
+playwright
+pymupdf
