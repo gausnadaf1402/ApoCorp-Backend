@@ -178,33 +178,33 @@ class QuotationViewSet(ModelPermissionMixin, TenantModelViewSet):
                     "You can only update quotations assigned to you."
                 )
         
-        # Fields that should NOT reset approval status (metadata only)
-        metadata_fields = ['po_number', 'manager_remark', 'rejected_at', 'follow_ups', 'currency']
+        # Check if this is an update to an already approved quotation
+        is_approved = quotation.review_status == "APPROVED"
         
-        # Check if ONLY metadata fields are being updated
-        updated_fields = set(self.request.data.keys())
-        
-        # Remove nested fields from consideration
-        if 'line_items' in updated_fields:
-            updated_fields.remove('line_items')
-        if 'terms' in updated_fields:
-            updated_fields.remove('terms')
-        if 'follow_ups' in updated_fields:
-            updated_fields.remove('follow_ups')
-        
-        # Check if any remaining fields are NOT metadata
-        non_metadata_fields = updated_fields - set(metadata_fields)
-        
-        # If it's after approval and we're updating more than just metadata → reset
-        if quotation.review_status == "APPROVED" and non_metadata_fields:
-            # Critical update - reset to under review
-            serializer.save(
-                review_status="UNDER_REVIEW",
-                visibility="INTERNAL"
-            )
-            # Update enquiry status back to NEGOTIATION
-            quotation.enquiry.status = "NEGOTIATION"
-            quotation.enquiry.save(update_fields=["status"])
+        if is_approved:
+            # Get all fields being updated
+            update_fields = set(self.request.data.keys())
+            
+            # Fields that should NOT reset approval (metadata only)
+            # These are safe updates: PO number, manager remark, and follow-ups
+            non_reset_fields = {'po_number', 'manager_remark', 'follow_ups'}
+            
+            # Check if there are any fields being updated that are NOT in non_reset_fields
+            significant_updates = update_fields - non_reset_fields
+            
+            if significant_updates:
+                # Any update other than PO number, remark, or follow-ups resets approval
+                serializer.save(
+                    review_status="UNDER_REVIEW",
+                    visibility="INTERNAL",
+                    client_status="DRAFT"  # Reset client status
+                )
+                # Update enquiry status back to NEGOTIATION
+                quotation.enquiry.status = "NEGOTIATION"
+                quotation.enquiry.save(update_fields=["status"])
+            else:
+                # Only PO number, remark, or follow-ups updated - keep approval status
+                serializer.save()
         else:
-            # For metadata-only updates (like PO number), keep the status
+            # Quotation is not approved, normal update
             serializer.save()
