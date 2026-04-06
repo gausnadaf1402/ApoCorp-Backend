@@ -1,10 +1,11 @@
+# apps/enquiries/views.py
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, Count, Q
 
 from core.viewsets import TenantModelViewSet
 from core.mixins import ModelPermissionMixin
@@ -106,17 +107,43 @@ class EnquiryViewSet(ModelPermissionMixin, TenantModelViewSet):
         return Response(EnquiryAttachmentSerializer(attachment).data)
 
     # ─────────────────────────────────────────────────────────
-    # Stats
+    # Stats - FIXED VERSION
     # ─────────────────────────────────────────────────────────
 
     @action(detail=False, methods=['get'])
     def stats(self, request):
+        """
+        Get enquiry statistics.
+        
+        Returns:
+        {
+            "total": 100,
+            "pending": 25,           # NEW status enquiries (Pending Enquiry)
+            "under_negotiation": 15, # NEGOTIATION status
+            "quoted": 30,            # PO_RECEIVED status (Quoted Enquiry)
+            "lost": 10,              # LOST status
+            "regret": 5,             # REGRET status
+            "total_value": 5000000   # Sum of prospective_value
+        }
+        """
         queryset = self.get_queryset()
-        return Response({
+        
+        # Calculate all stats in one go using aggregation for better performance
+        stats_data = {
             "total": queryset.count(),
-            "pending": queryset.filter(status='NEW').count(),
-            "under_negotiation": queryset.filter(status='NEGOTIATION').count(),
-            "po_received": queryset.filter(status='PO_RECEIVED').count(),
-            "lost": queryset.filter(status='LOST').count(),
+            "pending": queryset.filter(status='NEW').count(),           # Pending Enquiry
+            "under_negotiation": queryset.filter(status='NEGOTIATION').count(),  # Under Negotiation
+            "quoted": queryset.filter(status='PO_RECEIVED').count(),    # Quoted Enquiry (PO Received)
+            "lost": queryset.filter(status='LOST').count(),             # Enquiry Lost
+            "regret": queryset.filter(status='REGRET').count(),         # Regret
             "total_value": queryset.aggregate(total=Sum('prospective_value'))['total'] or 0,
-        })
+        }
+        
+        # Optional: Add percentage calculations if needed
+        if stats_data["total"] > 0:
+            stats_data["pending_percentage"] = round((stats_data["pending"] / stats_data["total"]) * 100, 2)
+            stats_data["quoted_percentage"] = round((stats_data["quoted"] / stats_data["total"]) * 100, 2)
+            stats_data["under_negotiation_percentage"] = round((stats_data["under_negotiation"] / stats_data["total"]) * 100, 2)
+            stats_data["lost_percentage"] = round((stats_data["lost"] / stats_data["total"]) * 100, 2)
+        
+        return Response(stats_data)

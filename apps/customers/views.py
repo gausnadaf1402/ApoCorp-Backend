@@ -2,7 +2,7 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q
+from django.db.models import Q, Sum, Count, Avg
 from django.utils import timezone
 from django.core.cache import cache
 
@@ -46,6 +46,98 @@ class CustomerViewSet(ModelPermissionMixin, TenantModelViewSet):
         customer.save()
         return Response({'status': 'unlocked'})
 
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """
+        Get customer statistics without pagination limitations.
+        
+        Query params (optional filters):
+        q        — search term (matches company_name, email, customer_code, phone)
+        tier     — filter by tier (A, B, C)
+        location — filter by city or country
+        
+        Returns:
+        {
+            "active": 1234,
+            "inactive": 56,
+            "domestic": 789,
+            "offshore": 501,
+            "total": 1290,
+            "tier_breakdown": {"A": 100, "B": 200, "C": 990},
+            "filters_applied": {...}
+        }
+        """
+        
+        # Get filter parameters (same as search endpoint)
+        query = request.GET.get("q", "").strip()
+        tier = request.GET.get("tier", "").strip()
+        location = request.GET.get("location", "").strip()
+        
+        # Base queryset — tenant-scoped always
+        qs = Customer.objects.filter(tenant=request.tenant)
+        
+        # Apply filters if they exist (same logic as search endpoint)
+        if query:
+            tokens = query.split()
+            for token in tokens:
+                qs = qs.filter(
+                    Q(company_name__icontains=token) |
+                    Q(email__icontains=token) |
+                    Q(customer_code__icontains=token) |
+                    Q(telephone_primary__icontains=token)
+                )
+        
+        if tier and tier in ['A', 'B', 'C']:
+            qs = qs.filter(tier=tier)
+        
+        if location:
+            location_lower = location.lower()
+            qs = qs.filter(
+                Q(city__icontains=location_lower) |
+                Q(country__icontains=location_lower)
+            )
+        
+        # Calculate stats using database aggregation (no pagination)
+        total = qs.count()
+        
+        # Active: is_active=True and is_locked=False
+        active = qs.filter(is_active=True, is_locked=False).count()
+        
+        # Inactive: is_locked=True or is_active=False
+        inactive = qs.filter(Q(is_locked=True) | Q(is_active=False)).count()
+        
+        # Domestic: country is India (case insensitive)
+        domestic = qs.filter(country__iexact='india').count()
+        
+        # Offshore: country exists and is not India
+        offshore = qs.exclude(country__iexact='india').exclude(country='').count()
+        
+        # Optional: Tier breakdown for additional insights
+        tier_breakdown = {
+            'A': qs.filter(tier='A').count(),
+            'B': qs.filter(tier='B').count(),
+            'C': qs.filter(tier='C').count(),
+        }
+        
+        # Optional: Calculate total lifetime value
+        total_lifetime_value = qs.aggregate(total=Sum('lifetime_value'))['total'] or 0
+        
+        response_data = {
+            "active": active,
+            "inactive": inactive,
+            "domestic": domestic,
+            "offshore": offshore,
+            "total": total,
+            "tier_breakdown": tier_breakdown,
+            "total_lifetime_value": float(total_lifetime_value),
+            "filters_applied": {
+                "search": query if query else None,
+                "tier": tier if tier else None,
+                "location": location if location else None,
+            }
+        }
+        
+        return Response(response_data)
 
     @action(detail=False, methods=['get'])
     def search(self, request):
@@ -107,7 +199,7 @@ class CustomerViewSet(ModelPermissionMixin, TenantModelViewSet):
         
         # Optimize with select_related/prefetch_related for related data
         qs = qs.select_related('account_manager').prefetch_related('pocs', 'addresses')
-        qs = qs.order_by("company_name")
+        qs = qs.order_by("-customer_code")
         
         total = qs.count()
         offset = (page - 1) * limit

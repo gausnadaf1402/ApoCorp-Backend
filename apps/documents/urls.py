@@ -1,14 +1,15 @@
 # apps/documents/urls.py
 
 from django.urls import path
-from .views import QuotationPDFView, LetterheadView
+from .views import QuotationPDFView, ProformaPDFView, LetterheadView
 
 urlpatterns = [
-    # GET  /api/documents/quotation/{id}/pdf/               ← inline preview
-    # GET  /api/documents/quotation/{id}/pdf/?download=true ← download
+    # Quotation PDF
     path('quotation/<uuid:pk>/pdf/', QuotationPDFView.as_view(), name='quotation-pdf'),
-
-    # GET  /api/documents/letterhead/   ← get current config
-    # POST /api/documents/letterhead/   ← upload PDF + save company info
+    
+    # Proforma PDF
+    path('proforma/<uuid:pk>/pdf/', ProformaPDFView.as_view(), name='proforma-pdf'),
+    
+    # Letterhead config
     path('letterhead/', LetterheadView.as_view(), name='letterhead'),
 ]

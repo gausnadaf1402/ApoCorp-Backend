@@ -105,8 +105,14 @@ class ProformaInvoiceViewSet(ModelPermissionMixin, TenantModelViewSet):
         })
 
     # ── Send ─────────────────────────────────────────────────────────────────
+# Add this method to ProformaInvoiceViewSet class
+
     @action(detail=True, methods=['post'])
     def send(self, request, pk=None):
+        """
+        POST /proforma/{id}/send/
+        Marks the proforma as SENT and returns PDF URL
+        """
         proforma = self.get_object()
         self._check_employee_permission(proforma)
 
@@ -116,7 +122,14 @@ class ProformaInvoiceViewSet(ModelPermissionMixin, TenantModelViewSet):
         proforma.status = 'SENT'
         proforma.save(update_fields=['status'])
 
-        return Response({'message': 'Proforma invoice sent successfully.'})
+        # Return PDF URL for frontend to use
+        pdf_url = f"/api/documents/proforma/{proforma.id}/pdf/?download=true"
+        
+        return Response({
+            'message': 'Proforma invoice marked as sent.',
+            'status': proforma.status,
+            'pdf_url': pdf_url
+        })
 
     # ── Update deductions ─────────────────────────────────────────────────────
     @action(detail=True, methods=['patch'], url_path='update_deductions')
@@ -198,4 +211,26 @@ class ProformaInvoiceViewSet(ModelPermissionMixin, TenantModelViewSet):
             'remaining':  str(proforma.total_receivable),
             'status':     proforma.status,
             'proforma':   self.get_serializer(proforma).data,
+        })
+    
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        proforma = self.get_object()
+        self._check_employee_permission(proforma)
+
+        # ❌ Block if already paid
+        if proforma.status == 'PAID':
+            raise PermissionDenied('Cannot cancel a fully paid invoice.')
+
+        # ❌ Optional: prevent duplicate cancel calls
+        if proforma.status == 'CANCELLED':
+            raise PermissionDenied('Proforma invoice is already cancelled.')
+
+        # ✅ Allow cancel for all other states
+        proforma.status = 'CANCELLED'
+        proforma.save(update_fields=['status'])
+
+        return Response({
+            'message': 'Proforma invoice cancelled successfully.',
+            'status': proforma.status
         })
