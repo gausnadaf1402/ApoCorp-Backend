@@ -75,6 +75,7 @@ def product_search(request):
         for token in tokens:
             qs = qs.filter(
                 Q(part_no__icontains=token) |
+                Q(legacy_part_no__icontains=token) |
                 Q(name__icontains=token)
             )
     
@@ -172,20 +173,12 @@ class ProductViewSet(ModelPermissionMixin, TenantModelViewSet):
         if product_type_id:
             queryset = queryset.filter(product_type_id=product_type_id)
         
-        # Filter by marketing/engineering parts
-        is_mktg_part = self.request.query_params.get('is_mktg_part')
-        if is_mktg_part is not None:
-            queryset = queryset.filter(is_mktg_part=is_mktg_part.lower() == 'true')
-        
-        is_eng_part = self.request.query_params.get('is_eng_part')
-        if is_eng_part is not None:
-            queryset = queryset.filter(is_eng_part=is_eng_part.lower() == 'true')
-        
         # Search functionality
         search_term = self.request.query_params.get('search')
         if search_term:
             queryset = queryset.filter(
                 Q(part_no__icontains=search_term) |
+                Q(legacy_part_no__icontains=search_term) |
                 Q(name__icontains=search_term) |
                 Q(brand__icontains=search_term) |
                 Q(barcode__icontains=search_term)
@@ -387,8 +380,8 @@ class ProductViewSet(ModelPermissionMixin, TenantModelViewSet):
             default_purchase_price=original_product.default_purchase_price,
             default_sale_price=original_product.default_sale_price,
             lead_time_days=original_product.lead_time_days,
-            is_mktg_part=original_product.is_mktg_part,
-            is_eng_part=original_product.is_eng_part,
+            min_stock_level=original_product.min_stock_level,
+            max_stock_level=original_product.max_stock_level,
             is_active=True,
             is_locked=False,
             created_by=request.user
@@ -467,8 +460,6 @@ class ProductViewSet(ModelPermissionMixin, TenantModelViewSet):
             "active_products": queryset.filter(is_active=True).count(),
             "inactive_products": queryset.filter(is_active=False).count(),
             "locked_products": queryset.filter(is_locked=True).count(),
-            "marketing_parts": queryset.filter(is_mktg_part=True).count(),
-            "engineering_parts": queryset.filter(is_eng_part=True).count(),
             "categories_count": ProductCategory.objects.filter(
                 tenant=request.tenant,
                 is_active=True
