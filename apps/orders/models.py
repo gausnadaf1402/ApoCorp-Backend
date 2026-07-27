@@ -94,41 +94,129 @@ class OALineItem(models.Model):
 
 
 class OACommercialTerms(models.Model):
+    """
+    Mirrors the "Commercial Terms & Conditions" printed form, clause by
+    clause. Each clause on the form is a dropdown of canned options plus
+    (usually) one free-editable option — the frontend sends whichever
+    text the user picked/typed, and the corresponding field here just
+    needs to be wide enough to hold it. Numeric fill-ins that go with a
+    specific option (a %, a day count, a week count) get their own
+    field so they can be used in calculations / templating, rather than
+    being buried inside a sentence.
+    """
 
     oa = models.OneToOneField(
         OrderAcknowledgement, on_delete=models.CASCADE, related_name='commercial_terms'
     )
 
-    payment_terms = models.CharField(max_length=150, blank=True)
+    # ── 1) Price Basis ──
+    # e.g. "Ex Works Pune" / "FOR Site" / "FOR Customer's Works/Godown" /
+    # "FOB Mumbai Port" / free-edited text
+    price_basis = models.CharField(max_length=255, blank=True)
+
+    # ── 2) Packing & Forwarding ──
+    # e.g. "Extra" / "Standard Packing included in above price" /
+    # "Fumigation & Seaworthy packing Included"
+    packing_forwarding = models.CharField(max_length=255, blank=True)
+    # only meaningful when packing_forwarding is the "Extra - _%" option
+    packing_extra_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
+
+    # ── 3) Freight ──
+    freight_charges = models.CharField(max_length=255, blank=True)
+
+    # ── 4) Insurance ──
+    insurance = models.CharField(max_length=255, blank=True)
+
+    # ── 5) GST ──
+    # e.g. "Not Applicable" / "Extra as applicable to Customer account"
+    gst_terms = models.CharField(max_length=255, blank=True)
+
+    # ── 6) Drawing Approval / Manufacturing Clearance ──
+    drawing_approval = models.CharField(max_length=255, blank=True)
+
+    # ── 7) Delivery ──
+    # "Ordered material shall be made ready within __ Weeks from <trigger>"
+    delivery_period_weeks = models.PositiveIntegerField(null=True, blank=True)
+    # the <trigger> text, e.g. "Receipt of technically and commercially
+    # clear Purchase order" / "Receipt of Advance" / "Receipt of Advance,
+    # Drawing Approval in CAT-1 and Manufacturing clearance"
+    delivery_basis = models.CharField(max_length=255, blank=True)
+
+    # ── 8) Inspection & Dispatch Clearance ──
+    inspection = models.CharField(max_length=255, blank=True)
+    dispatch_clearance = models.CharField(max_length=255, blank=True)
+
+    # ── 9) Warranty ──
+    # Full boilerplate paragraph — was CharField(255), too short to hold
+    # even the standard clause, switched to TextField.
+    warranty = models.TextField(blank=True)
+
+    # ── 10) Terms of Payment ──
+    # The form allows several milestones to apply at once (e.g. 20% with
+    # PO + 70% against proforma invoice + 10% within 30 days of invoice),
+    # so a single CharField can't represent it. Structured list instead:
+    #   [
+    #     {"option": "with_po", "percentage": 20},
+    #     {"option": "drawing_approval", "percentage": 10},
+    #     {"option": "proforma_invoice", "percentage": 60},
+    #     {"option": "credit_days", "percentage": 10, "days_after_invoice": 30},
+    #     {"option": "letter_of_credit", "percentage": 0, "lc_usance_days": 60},
+    #     {"option": "custom", "label": "<free text from the editable slot>"}
+    #   ]
+    # Validated in the serializer (see OACommercialTermsSerializer).
+    payment_milestones = models.JSONField(default=list, blank=True)
+    # Free-text human-readable summary / fallback, and quick-access copies
+    # of the two most commonly queried milestones (kept for backward
+    # compatibility with anything already reading these two fields).
+    payment_terms = models.TextField(blank=True)
     advance_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     days_after_invoicing = models.PositiveIntegerField(default=0)
 
-    price_basis = models.CharField(max_length=100, blank=True)
-    insurance = models.CharField(max_length=100, blank=True)
-    inspection = models.CharField(max_length=100, blank=True)
+    # ── 11) Technical Specifications & Bill of Material ──
+    # Boilerplate clause; field only needed if a specific OA overrides
+    # the standard wording.
+    technical_spec_note = models.TextField(blank=True)
 
+    # ── 12) Erection Guidelines ──
+    # e.g. "Not Applicable" / "1 visit for 2 days is included in above price"
+    erection_guidelines = models.CharField(max_length=255, blank=True)
+
+    # ── 13) Commissioning Assistance ──
+    commissioning_support = models.TextField(blank=True)
+    commissioning_visits = models.PositiveIntegerField(null=True, blank=True)
+    commissioning_days = models.PositiveIntegerField(null=True, blank=True)
+
+    # ── Special Notes ──
+    # Free list of the checked/editable special-note lines, e.g.
+    # ["We shall submit Advance Bank Guarantee.",
+    #  "We shall submit Performance Bank Guarantee for 10% Basic PO Value."]
+    special_notes = models.JSONField(default=list, blank=True)
+    directors_indemnity_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
+    pbg_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
+
+    # ── Existing document/format references (unchanged) ──
     ld_clause = models.CharField(max_length=100, blank=True)
     test_certificate = models.CharField(max_length=100, blank=True)
-    warranty = models.CharField(max_length=255, blank=True)
-
-    drawing_approval = models.CharField(max_length=100, blank=True)
-    freight_charges = models.CharField(max_length=150, blank=True)
-
     abg_format = models.CharField(max_length=100, blank=True)
     pbg_format = models.CharField(max_length=100, blank=True)
     sd_format = models.CharField(max_length=100, blank=True)
 
-    dispatch_clearance = models.CharField(max_length=100, blank=True)
-    commissioning_support = models.CharField(max_length=150, blank=True)
-
     schedule_dispatch_date = models.DateField(null=True, blank=True)
 
+    # ── Financial totals (unchanged) ──
     net_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     igst = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     cgst = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     sgst = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
+    # ── Channel / consultant (unchanged) ──
     channel_partner_name = models.CharField(max_length=255, blank=True)
     consultant_name = models.CharField(max_length=255, blank=True)
 
@@ -162,8 +250,6 @@ class Order(TenantModelMixin):
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='IN_PROGRESS')
     stage = models.CharField(max_length=20, choices=STAGE_CHOICES, default='PLANNING')
-
-    # After stage = models.CharField(...)
 
     order_category = models.CharField(
         max_length=20,

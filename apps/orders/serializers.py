@@ -17,10 +17,73 @@ class OALineItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('oa',)
 
+
 class OACommercialTermsSerializer(serializers.ModelSerializer):
     class Meta:
         model = OACommercialTerms
         exclude = ('oa',)
+
+    # ── Payment milestones: [{option, percentage, days_after_invoice?, lc_usance_days?, label?}, ...] ──
+    PAYMENT_OPTIONS = {
+        'with_po',
+        'drawing_approval',
+        'proforma_invoice',
+        'credit_days',
+        'letter_of_credit',
+        'custom',
+    }
+
+    def validate_payment_milestones(self, value):
+        if value in (None, ''):
+            return []
+        if not isinstance(value, list):
+            raise serializers.ValidationError("payment_milestones must be a list.")
+
+        total_pct = 0
+        for i, milestone in enumerate(value):
+            if not isinstance(milestone, dict):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}] must be an object."
+                )
+            option = milestone.get('option')
+            if option not in self.PAYMENT_OPTIONS:
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}].option must be one of {sorted(self.PAYMENT_OPTIONS)}."
+                )
+            if option == 'custom' and not milestone.get('label'):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}]: 'custom' option requires a 'label'."
+                )
+            if option == 'credit_days' and not milestone.get('days_after_invoice'):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}]: 'credit_days' option requires 'days_after_invoice'."
+                )
+            if option == 'letter_of_credit' and not milestone.get('lc_usance_days'):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}]: 'letter_of_credit' option requires 'lc_usance_days'."
+                )
+            pct = milestone.get('percentage') or 0
+            try:
+                total_pct += float(pct)
+            except (TypeError, ValueError):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}].percentage must be numeric."
+                )
+
+        # Soft check only — rounding across milestones is common, so we
+        # warn via a wide tolerance rather than hard-blocking the save.
+        if total_pct and (total_pct < 99 or total_pct > 101) and total_pct != 0:
+            raise serializers.ValidationError(
+                f"payment_milestones percentages sum to {total_pct}, expected ~100."
+            )
+        return value
+
+    def validate_special_notes(self, value):
+        if value in (None, ''):
+            return []
+        if not isinstance(value, list) or not all(isinstance(n, str) for n in value):
+            raise serializers.ValidationError("special_notes must be a list of strings.")
+        return value
 
 
 class OrderAcknowledgementSerializer(
@@ -87,11 +150,11 @@ class OrderAcknowledgementSerializer(
     def to_representation(self, instance):
         """Override to always show latest PO number from quotation"""
         data = super().to_representation(instance)
-        
+
         # Override customer_po_number in transport_details with live quotation.po_number
         if instance.quotation and data.get('transport_details'):
             data['transport_details']['customer_po_number'] = instance.quotation.po_number or "NA"
-        
+
         return data
 
     def _enrich_line_items(self, line_items_data):
@@ -179,22 +242,22 @@ class OrderAcknowledgementSerializer(
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     """Detailed Order serializer with full OA data for invoice creation"""
-    
+
     # OA fields
     oa_number = serializers.CharField(source='oa.oa_number', read_only=True)
     oa_status = serializers.CharField(source='oa.status', read_only=True)
     oa_total_value = serializers.DecimalField(source='oa.total_value', read_only=True, max_digits=15, decimal_places=2)
-    
+
     # OA Line Items (critical for invoice creation)
     oa_line_items = OALineItemSerializer(source='oa.line_items', many=True, read_only=True)
-    
+
     # Address snapshots (bill_to / ship_to from OA)
     billing_snapshot = serializers.JSONField(source='oa.billing_snapshot', read_only=True)
     shipping_snapshot = serializers.JSONField(source='oa.shipping_snapshot', read_only=True)
-    
+
     # Transport details (for pre-populating logistics step)
     transport_details = serializers.JSONField(source='oa.transport_details', read_only=True)
-    
+
     # Live customer data
     customer_detail = CustomerReadSerializer(  # Import from apps.customers.serializers
         source='oa.quotation.enquiry.customer', read_only=True
@@ -208,10 +271,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     po_number = serializers.CharField(
         source='oa.quotation.po_number', read_only=True
     )
-    
+
     # Commercial terms
     commercial_terms = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Order
         fields = [
@@ -227,7 +290,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             'customer_detail', 'enquiry_number', 'quotation_number',
             'po_number', 'commercial_terms',
         ]
-    
+
     def get_commercial_terms(self, obj):
         if hasattr(obj.oa, 'commercial_terms'):
             from .serializers import OACommercialTermsSerializer
@@ -237,7 +300,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     """Basic Order serializer for list views"""
-    
+
     oa_number = serializers.CharField(source='oa.oa_number', read_only=True)
     customer_detail = CustomerReadSerializer(
         source='oa.quotation.enquiry.customer', read_only=True

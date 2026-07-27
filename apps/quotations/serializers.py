@@ -29,6 +29,69 @@ class QuotationTermsSerializer(serializers.ModelSerializer):
         model = QuotationTerms
         exclude = ("quotation",)
 
+    # ── Payment milestones: [{option, percentage, days_after_invoice?, lc_usance_days?, label?}, ...] ──
+    # Same accepted shape as apps.orders.serializers.OACommercialTermsSerializer,
+    # since the OA is generated from this quotation and both need to accept
+    # identical frontend payloads for this clause.
+    PAYMENT_OPTIONS = {
+        'with_po',
+        'drawing_approval',
+        'proforma_invoice',
+        'credit_days',
+        'letter_of_credit',
+        'custom',
+    }
+
+    def validate_payment_milestones(self, value):
+        if value in (None, ''):
+            return []
+        if not isinstance(value, list):
+            raise serializers.ValidationError("payment_milestones must be a list.")
+
+        total_pct = 0
+        for i, milestone in enumerate(value):
+            if not isinstance(milestone, dict):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}] must be an object."
+                )
+            option = milestone.get('option')
+            if option not in self.PAYMENT_OPTIONS:
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}].option must be one of {sorted(self.PAYMENT_OPTIONS)}."
+                )
+            if option == 'custom' and not milestone.get('label'):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}]: 'custom' option requires a 'label'."
+                )
+            if option == 'credit_days' and not milestone.get('days_after_invoice'):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}]: 'credit_days' option requires 'days_after_invoice'."
+                )
+            if option == 'letter_of_credit' and not milestone.get('lc_usance_days'):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}]: 'letter_of_credit' option requires 'lc_usance_days'."
+                )
+            pct = milestone.get('percentage') or 0
+            try:
+                total_pct += float(pct)
+            except (TypeError, ValueError):
+                raise serializers.ValidationError(
+                    f"payment_milestones[{i}].percentage must be numeric."
+                )
+
+        if total_pct and (total_pct < 99 or total_pct > 101) and total_pct != 0:
+            raise serializers.ValidationError(
+                f"payment_milestones percentages sum to {total_pct}, expected ~100."
+            )
+        return value
+
+    def validate_special_notes(self, value):
+        if value in (None, ''):
+            return []
+        if not isinstance(value, list) or not all(isinstance(n, str) for n in value):
+            raise serializers.ValidationError("special_notes must be a list of strings.")
+        return value
+
 
 class QuotationFollowUpSerializer(serializers.ModelSerializer):
 
@@ -56,7 +119,7 @@ class QuotationSerializer(CustomerLockValidationMixin, serializers.ModelSerializ
     enquiry_number = serializers.CharField(source='enquiry.enquiry_number', read_only=True)
     enquiry_priority = serializers.CharField(source='enquiry.priority', read_only=True)
     enquiry_status = serializers.CharField(source='enquiry.status', read_only=True)
-    
+
     # Additional enquiry fields for Requirement Details section
     enquiry_subject = serializers.CharField(source='enquiry.subject', read_only=True, default='')
     enquiry_product_name = serializers.CharField(source='enquiry.product_name', read_only=True, default='')
