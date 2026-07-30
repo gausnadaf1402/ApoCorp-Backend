@@ -7,8 +7,26 @@ from .models import (
     OrderAcknowledgement,
     OALineItem,
     OACommercialTerms,
-    Order
+    Order,
+    OAAttachment
 )
+
+
+class OAAttachmentSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = OAAttachment
+        fields = ['id', 'file', 'file_url', 'uploaded_at']
+        read_only_fields = ['id', 'uploaded_at']
+
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        if obj.file:
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return None
 
 
 class OALineItemSerializer(serializers.ModelSerializer):
@@ -92,6 +110,7 @@ class OrderAcknowledgementSerializer(
 ):
     line_items = OALineItemSerializer(many=True)
     commercial_terms = OACommercialTermsSerializer(required=False)
+    attachments = OAAttachmentSerializer(many=True, read_only=True)
 
     # ── Live customer/enquiry data via FK chain ──
     customer_detail = CustomerReadSerializer(
@@ -154,6 +173,22 @@ class OrderAcknowledgementSerializer(
         # Override customer_po_number in transport_details with live quotation.po_number
         if instance.quotation and data.get('transport_details'):
             data['transport_details']['customer_po_number'] = instance.quotation.po_number or "NA"
+
+        # If commercial_terms is None, serialize the quotation's terms as fallback
+        if not data.get('commercial_terms') and instance.quotation and hasattr(instance.quotation, 'terms') and instance.quotation.terms:
+            q_terms = instance.quotation.terms
+            from apps.quotations.serializers import QuotationTermsSerializer
+            q_data = QuotationTermsSerializer(q_terms).data
+
+            # Map freight -> freight_charges
+            freight = q_data.pop('freight', '')
+
+            # Construct OA commercial terms data structure
+            oa_terms_data = {
+                **q_data,
+                'freight_charges': freight,
+            }
+            data['commercial_terms'] = oa_terms_data
 
         return data
 
@@ -292,9 +327,19 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         ]
 
     def get_commercial_terms(self, obj):
-        if hasattr(obj.oa, 'commercial_terms'):
-            from .serializers import OACommercialTermsSerializer
-            return OACommercialTermsSerializer(obj.oa.commercial_terms).data
+        if hasattr(obj, 'oa') and obj.oa:
+            if hasattr(obj.oa, 'commercial_terms') and obj.oa.commercial_terms:
+                from .serializers import OACommercialTermsSerializer
+                return OACommercialTermsSerializer(obj.oa.commercial_terms).data
+            elif obj.oa.quotation and hasattr(obj.oa.quotation, 'terms') and obj.oa.quotation.terms:
+                q_terms = obj.oa.quotation.terms
+                from apps.quotations.serializers import QuotationTermsSerializer
+                q_data = QuotationTermsSerializer(q_terms).data
+                freight = q_data.pop('freight', '')
+                return {
+                    **q_data,
+                    'freight_charges': freight,
+                }
         return None
 
 

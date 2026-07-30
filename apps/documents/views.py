@@ -662,17 +662,52 @@ def _build_oa_context(oa: OrderAcknowledgement) -> dict:
     shipping_snap = oa.shipping_snapshot or {}
     commercial = getattr(oa, 'commercial_terms', None)
     q_terms = getattr(quotation, 'terms', None) if quotation else None
+
+    # Helper to get field value with fallback
+    def get_term(field_name, fallback_name=None):
+        if not fallback_name:
+            fallback_name = field_name
+        # If commercial (OA terms) exists, get value from it
+        if commercial and hasattr(commercial, field_name):
+            val = getattr(commercial, field_name)
+            if val not in (None, '', []):
+                return val
+        # Otherwise fallback to q_terms (Quotation terms)
+        if q_terms and hasattr(q_terms, fallback_name):
+            val = getattr(q_terms, fallback_name)
+            if val not in (None, '', []):
+                return val
+        return None
+
+    # Compile delivery string dynamically
+    delivery_weeks = get_term('delivery_period_weeks')
+    delivery_basis = get_term('delivery_basis')
+    if delivery_weeks:
+        delivery_str = f"Ordered material shall be made ready within {delivery_weeks} Weeks from {delivery_basis or ''}"
+    else:
+        delivery_str = get_term('delivery') or ''
+
     commercial_ctx = {
-        'payment_terms': (commercial.payment_terms if commercial and commercial.payment_terms else '') or (q_terms.payment_terms if q_terms else ''),
-        'delivery': q_terms.delivery if q_terms else '',
-        'warranty': (commercial.warranty if commercial and commercial.warranty else '') or (q_terms.warranty if q_terms else ''),
-        'price_basis': (commercial.price_basis if commercial and commercial.price_basis else '') or (q_terms.price_basis if q_terms else ''),
-        'freight': (commercial.freight_charges if commercial and commercial.freight_charges else '') or (q_terms.freight if q_terms else ''),
-        'insurance': (commercial.insurance if commercial and commercial.insurance else '') or (q_terms.insurance if q_terms else ''),
-        'ld_clause': (commercial.ld_clause if commercial and commercial.ld_clause else '') or 'Not Applicable',
-        'test_certificate': (commercial.test_certificate if commercial and commercial.test_certificate else '') or 'Required',
-        'validity': q_terms.validity if q_terms else '',
-        'remarks': q_terms.remarks if q_terms else '',
+        'price_basis': get_term('price_basis'),
+        'packing_forwarding': get_term('packing_forwarding'),
+        'packing_extra_percentage': get_term('packing_extra_percentage'),
+        'freight': get_term('freight_charges', 'freight'),
+        'insurance': get_term('insurance'),
+        'gst_terms': get_term('gst_terms'),
+        'drawing_approval': get_term('drawing_approval'),
+        'delivery': delivery_str,
+        'inspection': get_term('inspection'),
+        'dispatch_clearance': get_term('dispatch_clearance'),
+        'test_certificate': get_term('test_certificate') or 'Required',
+        'warranty': get_term('warranty'),
+        'payment_terms': get_term('payment_terms'),
+        'technical_spec_note': get_term('technical_spec_note'),
+        'erection_guidelines': get_term('erection_guidelines'),
+        'commissioning_support': get_term('commissioning_support'),
+        'special_notes': get_term('special_notes') or [],
+        'ld_clause': get_term('ld_clause') or 'Not Applicable',
+        'validity': get_term('validity'),
+        'remarks': get_term('remarks'),
     }
 
     return {

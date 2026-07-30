@@ -55,21 +55,21 @@
     }
 
     .oa-title {
-      font-size: 24px;
+      font-size: 22pt;
       font-weight: 700;
       color: #1e1e1e;
       letter-spacing: -0.5px;
     }
 
     .issue-date {
-      font-size: 9.5px;
+      font-size: 8.5pt;
       color: #555;
       margin-top: 6px;
       font-weight: 500;
     }
 
     .oa-number {
-      font-size: 17px;
+      font-size: 14pt;
       font-weight: 700;
       color: #2c2c2c;
       background: #eaeef2;
@@ -79,7 +79,7 @@
     }
 
     .status-badge {
-      font-size: 9px;
+      font-size: 8.5pt;
       margin-top: 6px;
       font-weight: 600;
     }
@@ -119,7 +119,7 @@
     }
 
     .details-label {
-      font-size: 8px;
+      font-size: 8.5pt;
       font-weight: 700;
       color: #777;
       text-transform: uppercase;
@@ -128,14 +128,14 @@
     }
 
     .company-name {
-      font-size: 11pt;
+      font-size: 11.5pt;
       font-weight: 700;
       color: #111;
       margin-bottom: 4px;
     }
 
     .details-text {
-      font-size: 9.5pt;
+      font-size: 9.8pt;
       color: #444;
       margin-bottom: 2px;
     }
@@ -145,7 +145,7 @@
     }
 
     .address-card-title {
-      font-size: 9pt;
+      font-size: 9.8pt;
       font-weight: 700;
       color: #333;
       margin-bottom: 2px;
@@ -159,7 +159,7 @@
       padding: 10px 14px;
       background: #f4f5f7;
       border-radius: 6px;
-      font-size: 9.5pt;
+      font-size: 9.8pt;
       border-left: 3px solid #2c2c2c;
     }
 
@@ -180,7 +180,7 @@
 
     /* ========== TABLES ========== */
     .section-title {
-      font-size: 10px;
+      font-size: 13.5pt;
       font-weight: 700;
       color: #2c2c2c;
       text-transform: uppercase;
@@ -201,7 +201,7 @@
     .items-table th {
       background: #2c2c2c;
       color: white;
-      font-size: 9px;
+      font-size: 9pt;
       font-weight: 700;
       padding: 8px 6px;
       text-align: left;
@@ -212,7 +212,7 @@
     .items-table td {
       padding: 7px 6px;
       border: 1px solid #d4d4d4;
-      font-size: 9.2pt;
+      font-size: 9.8pt;
       vertical-align: top;
       word-wrap: break-word;
       word-break: break-all;
@@ -225,18 +225,18 @@
     .part-name {
       font-weight: normal;
       color: #111;
-      font-size: 9.4pt;
+      font-size: 9.8pt;
     }
 
     .unit-text, .hsn-code, .desc-text {
-      font-size: 8.2px;
+      font-size: 8.5pt;
       color: #555;
       margin-top: 2px;
       line-height: 1.4;
     }
 
     .job-code {
-      font-size: 7.5px;
+      font-size: 8pt;
       background: #ececec;
       padding: 2px 6px;
       border-radius: 3px;
@@ -270,7 +270,7 @@
       justify-content: space-between;
       padding: 6px 12px;
       border-bottom: 1px solid #eaeaea;
-      font-size: 9.5pt;
+      font-size: 9.8pt;
     }
 
     .total-line .label {
@@ -297,7 +297,7 @@
     .total-line.grand-total .value {
       font-weight: 800;
       color: white;
-      font-size: 10.5pt;
+      font-size: 11.5pt;
     }
 
     .amount-words {
@@ -311,14 +311,14 @@
     }
 
     .words-label {
-      font-size: 7.5px;
+      font-size: 8.5pt;
       font-weight: 700;
       text-transform: uppercase;
       color: #3a3a3a;
     }
 
     .words-value {
-      font-size: 9.5pt;
+      font-size: 9.8pt;
       font-weight: 500;
       margin-top: 3px;
       color: #1e1e1e;
@@ -345,7 +345,7 @@
     }
 
     .transport-label {
-      font-size: 8px;
+      font-size: 8.5pt;
       font-weight: 700;
       color: #777;
       text-transform: uppercase;
@@ -353,7 +353,7 @@
     }
 
     .transport-value {
-      font-size: 9.5pt;
+      font-size: 9.8pt;
       font-weight: 600;
       color: #111;
     }
@@ -364,14 +364,16 @@
       padding: 12px 18px;
       background: #fefefe;
       border-radius: 4px;
-      page-break-inside: avoid;
-      break-inside: avoid;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
     }
 
     .term-item {
       padding: 7px 0;
       border-bottom: 1px solid #9a9a9a;
       overflow: hidden;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
 
     .term-item:last-child {
@@ -394,6 +396,12 @@
       line-height: 1.48;
     }
 
+    .closing-section-container {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin-top: 18px;
+    }
+
     /* ========== BANK DETAILS ========== */
     .bank-box {
       border: 1px solid #ccc;
@@ -406,7 +414,7 @@
     }
 
     .bank-title {
-      font-size: 13px;
+      font-size: 11.5pt;
       font-weight: 700;
       color: #2c2c2c;
       margin-bottom: 10px;
@@ -430,14 +438,14 @@
     }
 
     .bank-label {
-      font-size: 7.5px;
+      font-size: 8.5pt;
       font-weight: 700;
       color: #777;
       text-transform: uppercase;
     }
 
     .bank-value {
-      font-size: 9.5pt;
+      font-size: 9.8pt;
       font-weight: 700;
       color: #111;
       margin-top: 2px;
@@ -455,13 +463,13 @@
     }
 
     .contact-line {
-      font-size: 9.5pt;
+      font-size: 9.8pt;
       margin-bottom: 8px;
       font-weight: 600;
     }
 
     .thankyou-line {
-      font-size: 9pt;
+      font-size: 9.8pt;
       color: #444;
       line-height: 1.5;
     }
@@ -497,7 +505,7 @@
     }
 
     .sig-role {
-      font-size: 8.5px;
+      font-size: 8.5pt;
       font-weight: 700;
       text-transform: uppercase;
       color: #555;
@@ -505,7 +513,7 @@
     }
 
     .sig-name {
-      font-size: 10pt;
+      font-size: 10.5pt;
       font-weight: 700;
       margin-top: 6px;
       color: #1e1e1e;
@@ -519,7 +527,7 @@
     }
 
     .footer-text {
-      font-size: 10px;
+      font-size: 8.5pt;
       font-weight: 600;
       color: #2c2c2c;
       background: #eef0f2;
@@ -738,6 +746,7 @@
 
   <!-- COMMERCIAL TERMS SECTION -->
   {% if commercial %}
+  <div class="page-break-before"></div>
   <div class="section-title">COMMERCIAL TERMS &amp; CONDITIONS</div>
   <div class="terms-box">
     {% if commercial.payment_terms %}
@@ -752,17 +761,69 @@
     {% if commercial.price_basis %}
     <div class="term-item"><div class="term-key">Price Basis</div><div class="term-value">{{ commercial.price_basis }}</div></div>
     {% endif %}
+    {% if commercial.packing_forwarding %}
+    <div class="term-item">
+      <div class="term-key">Packing &amp; Forwarding</div>
+      <div class="term-value">
+        {{ commercial.packing_forwarding }}
+        {% if commercial.packing_extra_percentage %}
+          @ {{ commercial.packing_extra_percentage }}%
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
     {% if commercial.freight %}
     <div class="term-item"><div class="term-key">Freight</div><div class="term-value">{{ commercial.freight }}</div></div>
     {% endif %}
     {% if commercial.insurance %}
     <div class="term-item"><div class="term-key">Insurance</div><div class="term-value">{{ commercial.insurance }}</div></div>
     {% endif %}
-    {% if commercial.ld_clause %}
-    <div class="term-item"><div class="term-key">LD Clause</div><div class="term-value">{{ commercial.ld_clause }}</div></div>
+    {% if commercial.gst_terms %}
+    <div class="term-item"><div class="term-key">GST</div><div class="term-value">{{ commercial.gst_terms }}</div></div>
+    {% endif %}
+    {% if commercial.drawing_approval %}
+    <div class="term-item"><div class="term-key">Drawing Approval</div><div class="term-value">{{ commercial.drawing_approval }}</div></div>
+    {% endif %}
+    {% if commercial.inspection %}
+    <div class="term-item"><div class="term-key">Inspection</div><div class="term-value">{{ commercial.inspection }}</div></div>
+    {% endif %}
+    {% if commercial.dispatch_clearance and commercial.dispatch_clearance != commercial.inspection %}
+    <div class="term-item"><div class="term-key">Dispatch Clearance</div><div class="term-value">{{ commercial.dispatch_clearance }}</div></div>
     {% endif %}
     {% if commercial.test_certificate %}
     <div class="term-item"><div class="term-key">Test Certificate</div><div class="term-value">{{ commercial.test_certificate }}</div></div>
+    {% endif %}
+    {% if commercial.technical_spec_note %}
+    <div class="term-item"><div class="term-key">Technical Specs</div><div class="term-value">{{ commercial.technical_spec_note }}</div></div>
+    {% endif %}
+    {% if commercial.erection_guidelines %}
+    <div class="term-item"><div class="term-key">Erection Guidelines</div><div class="term-value">{{ commercial.erection_guidelines }}</div></div>
+    {% endif %}
+    {% if commercial.commissioning_support %}
+    <div class="term-item">
+      <div class="term-key">Commissioning Support</div>
+      <div class="term-value" style="white-space: pre-wrap;">{{ commercial.commissioning_support }}</div>
+    </div>
+    {% endif %}
+    {% if commercial.special_notes %}
+    <div class="term-item">
+      <div class="term-key">Special Notes</div>
+      <div class="term-value">
+        <ul style="list-style-type: disc; margin: 0; padding-left: 20px;">
+          {% for note in commercial.special_notes %}
+            {% if note %}
+              <li>{{ note }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+    {% if commercial.ld_clause %}
+    <div class="term-item"><div class="term-key">LD Clause</div><div class="term-value">{{ commercial.ld_clause }}</div></div>
+    {% endif %}
+    {% if commercial.validity %}
+    <div class="term-item"><div class="term-key">Validity</div><div class="term-value">{{ commercial.validity }}</div></div>
     {% endif %}
     {% if commercial.remarks %}
     <div class="term-item"><div class="term-key">Remarks</div><div class="term-value">{{ commercial.remarks }}</div></div>
@@ -770,72 +831,77 @@
   </div>
   {% endif %}
 
-  <!-- BANK DETAILS SECTION -->
-  {% if bank_name or bank_account_number or bank_ifsc %}
-  <div class="bank-box">
-    <div class="bank-title">BANK DETAILS</div>
-    <div class="bank-grid">
-      <div class="bank-row">
-        {% if bank_name %}
-        <div class="bank-item"><div class="bank-label">Bank Name</div><div class="bank-value">{{ bank_name }}</div></div>
-        {% endif %}
-        {% if bank_account_name %}
-        <div class="bank-item"><div class="bank-label">A/C Name</div><div class="bank-value">{{ bank_account_name }}</div></div>
-        {% endif %}
-        {% if bank_branch %}
-        <div class="bank-item"><div class="bank-label">Branch</div><div class="bank-value">{{ bank_branch }}</div></div>
-        {% endif %}
-      </div>
-      <div class="bank-row">
-        {% if bank_account_number %}
-        <div class="bank-item"><div class="bank-label">A/C Number</div><div class="bank-value">{{ bank_account_number }}</div></div>
-        {% endif %}
-        {% if bank_ifsc %}
-        <div class="bank-item"><div class="bank-label">IFSC Code</div><div class="bank-value">{{ bank_ifsc }}</div></div>
-        {% endif %}
-        {% if bank_micr %}
-        <div class="bank-item"><div class="bank-label">MICR Code</div><div class="bank-value">{{ bank_micr }}</div></div>
-        {% endif %}
+  <!-- CLOSING SECTION CONTAINER (KEEPS BANK DETAILS, CLARIFICATION, AND SIGNATURES TOGETHER) -->
+  <div class="closing-section-container">
+    <!-- BANK DETAILS SECTION -->
+    {% if bank_name or bank_account_number or bank_ifsc %}
+    <div class="bank-box">
+      <div class="bank-title">BANK DETAILS</div>
+      <div class="bank-grid">
+        <div class="bank-row">
+          {% if bank_name %}
+          <div class="bank-item"><div class="bank-label">Bank Name</div><div class="bank-value">{{ bank_name }}</div></div>
+          {% endif %}
+          {% if bank_account_name %}
+          <div class="bank-item"><div class="bank-label">A/C Name</div><div class="bank-value">{{ bank_account_name }}</div></div>
+          {% endif %}
+          {% if bank_branch %}
+          <div class="bank-item"><div class="bank-label">Branch</div><div class="bank-value">{{ bank_branch }}</div></div>
+          {% endif %}
+        </div>
+        <div class="bank-row">
+          {% if bank_account_number %}
+          <div class="bank-item"><div class="bank-label">A/C Number</div><div class="bank-value">{{ bank_account_number }}</div></div>
+          {% endif %}
+          {% if bank_ifsc %}
+          <div class="bank-item"><div class="bank-label">IFSC Code</div><div class="bank-value">{{ bank_ifsc }}</div></div>
+          {% endif %}
+          {% if bank_micr %}
+          <div class="bank-item"><div class="bank-label">MICR Code</div><div class="bank-value">{{ bank_micr }}</div></div>
+          {% endif %}
+        </div>
       </div>
     </div>
-  </div>
-  {% endif %}
+    {% endif %}
 
-  <!-- CLOSING SECTION -->
-  <div class="closing-box">
-    <div class="contact-line">
-      <strong>For any clarification, please contact our Sales Representative:</strong> {{ prepared_by }}{% if company_phone %} | {{ company_phone }}{% endif %}{% if company_email %} | {{ company_email }}{% endif %}
-    </div>
-    <div class="thankyou-line">
-      We sincerely thank you for this opportunity and look forward to receiving your valued order.<br>
-      We assure you of our best services at all times and remain committed to delivering quality products as per your requirements.
-    </div>
-  </div>
-
-  <div class="signature-push-spacer"></div>
-
-  <!-- SIGNATURES -->
-  <div class="signatures-wrapper">
-    <div class="signatures">
-      <div class="sig-col">
-        <div class="sig-line"></div>
-        <div class="sig-role">CUSTOMER ACCEPTANCE</div>
-        <div class="sig-name">{{ customer.company_name }}</div>
+    <!-- CLOSING SECTION -->
+    <div class="closing-box">
+      <div class="contact-line">
+        <strong>For any clarification, please contact our Sales Representative:</strong> {{ prepared_by }}{% if company_phone %} | {{ company_phone }}{% endif %}{% if company_email %} | {{ company_email }}{% endif %}
       </div>
-      <div class="sig-col">
-        <div class="sig-line"></div>
-        <div class="sig-role">AUTHORISED SIGNATORY</div>
-        <div class="sig-name">{{ company_name }}</div>
+      <div class="thankyou-line">
+        We sincerely thank you for this opportunity and look forward to receiving your valued order.<br>
+        We assure you of our best services at all times and remain committed to delivering quality products as per your requirements.
+      </div>
+    </div>
+
+    <div class="signature-push-spacer"></div>
+
+    <!-- SIGNATURES -->
+    <div class="signatures-wrapper">
+      <div class="signatures">
+        <div class="sig-col">
+          <div class="sig-line"></div>
+          <div class="sig-role">CUSTOMER ACCEPTANCE</div>
+          <div class="sig-name">{{ customer.company_name }}</div>
+        </div>
+        <div class="sig-col">
+          <div class="sig-line"></div>
+          <div class="sig-role">AUTHORISED SIGNATORY</div>
+          <div class="sig-name">{{ company_name }}</div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- FOOTER -->
+  {% comment %}
   <div class="footer">
     <div class="footer-text">
       📄 Computer generated order acknowledgement • {{ oa_number }} • Pune, India
     </div>
   </div>
+  {% endcomment %}
 
 </div>
 </body>

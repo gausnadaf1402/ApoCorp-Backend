@@ -279,3 +279,14 @@ class Order(TenantModelMixin):
 
     def __str__(self):
         return self.order_number
+
+
+class OAAttachment(models.Model):
+    oa = models.ForeignKey(
+        OrderAcknowledgement, on_delete=models.CASCADE, related_name='attachments'
+    )
+    file = models.FileField(upload_to="oa_files/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Attachment for {self.oa.oa_number} - {self.file.name}"

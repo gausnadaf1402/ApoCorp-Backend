@@ -186,7 +186,7 @@
     .items-table td.c { text-align: center; }
 
     .part-name {
-      font-weight: 700;
+      font-weight: 400;
       color: #111;
       font-size: 10pt;
     }
@@ -564,17 +564,15 @@
   <!-- ADDRESSES -->
   <div class="address-row">
     <div class="address-col">
-      <div class="address-label">FROM</div>
+      <div class="address-label">BUYER</div>
       <div class="company-name">{{ company_name }}</div>
       {% if company_address %}<div class="address-text">{{ company_address }}</div>{% endif %}
       {% if company_phone %}<div class="address-text">Ph: {{ company_phone }}</div>{% endif %}
       {% if company_email %}<div class="address-text">{{ company_email }}</div>{% endif %}
-      {% if company_gstin or company_pan %}
-      <div class="gst-text">GSTIN: {{ company_gstin }} | PAN: {{ company_pan }}</div>
-      {% endif %}
+      <div class="gst-text">GSTIN: {{ company_gstin|default:"—" }}{% if company_pan %} | PAN: {{ company_pan }}{% endif %}</div>
     </div>
     <div class="address-col">
-      <div class="address-label">BILL TO</div>
+      <div class="address-label">CONSIGNEE</div>
       <div class="company-name">{{ customer_name }}</div>
       {% if billing_address %}
         <div class="address-text">{{ billing_address.address_line }}</div>
@@ -586,15 +584,50 @@
         {% if customer_email %}<div class="address-text">{{ customer_email }}</div>{% endif %}
         {% if customer_phone %}<div class="address-text">Ph: {{ customer_phone }}</div>{% endif %}
       {% endif %}
-      {% if customer_gstin %}
-      <div class="gst-text">GSTIN: {{ customer_gstin }}</div>
-      {% endif %}
+      <div class="gst-text">GSTIN: {{ customer_gstin|default:"—" }}</div>
     </div>
   </div>
 
-  <!-- ORDER REFERENCE -->
-  <div style="margin-bottom: 20px; padding: 10px 14px; background: #f3f4f6; border-radius: 6px;">
-    <strong>Order Reference:</strong> {{ order_number }} | <strong>OA Number:</strong> {{ oa_number }} | <strong>Enquiry:</strong> {{ enquiry_number }}
+  <!-- REFERENCE & METADATA BOX -->
+  <div style="margin-bottom: 20px; padding: 12px 18px; background: #f3f4f6; border-radius: 6px; font-size: 9.5pt; color: #1e1e1e; line-height: 1.6;">
+    <div style="display: table; width: 100%;">
+      <!-- Left Side (Invoice No/Date, PO No/Date, Email) -->
+      <div style="display: table-cell; width: 60%; vertical-align: top; padding-right: 18px; border-right: 1px solid #cccccc;">
+        <div style="display: table; width: 100%;">
+          <div style="display: table-row;">
+            <div style="display: table-cell; padding-bottom: 6px; padding-right: 12px; white-space: nowrap;">
+              <strong>Invoice No:</strong> {{ proforma_number }}
+            </div>
+            <div style="display: table-cell; padding-bottom: 6px; white-space: nowrap;">
+              <strong>Invoice Date:</strong> {{ invoice_date }}
+            </div>
+          </div>
+          <div style="display: table-row;">
+            <div style="display: table-cell; padding-bottom: 6px; padding-right: 12px; white-space: nowrap;">
+              <strong>PO No.:</strong> {{ po_number|default:"—" }}
+            </div>
+            <div style="display: table-cell; padding-bottom: 6px; white-space: nowrap;">
+              <strong>PO Date:</strong> {{ po_date|default:"—" }}
+            </div>
+          </div>
+          <div style="display: table-row;">
+            <div style="display: table-cell; white-space: nowrap;" colspan="2">
+              <strong>Email:</strong> {{ customer_email|default:"—" }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side (Order Acknowledgment No, Contact Person) -->
+      <div style="display: table-cell; width: 40%; vertical-align: top; padding-left: 18px;">
+        <div style="margin-bottom: 6px; white-space: nowrap;">
+          <strong>Order Acknowledgment No.:</strong> {{ oa_number|default:"—" }}
+        </div>
+        <div style="white-space: nowrap;">
+          <strong>Contact Person:</strong> {{ contact_person|default:"—" }}
+        </div>
+      </div>
+    </div>
   </div>
 
 
@@ -606,8 +639,7 @@
         <th style="width:30px">#</th>
         <th style="width:95px">Part / HSN</th>
         <th>Description</th>
-        <th class="c" style="width:52px">Qty</th>
-        <th class="c" style="width:52px">Unit</th>
+        <th class="c" style="width:65px">QTY/UNIT</th>
         <th class="r" style="width:85px">Unit Price</th>
         <th class="r" style="width:85px">Amount</th>
         <th class="c" style="width:52px">Tax %</th>
@@ -620,22 +652,23 @@
         <td class="c">{{ forloop.counter }}</td>
         <td>
             {% if item.part_no %}<div class="part-name">{{ item.part_no }}</div>{% endif %}
-            {% if item.hsn_code %}<div class="hsn-code">HSN: {{ item.hsn_code }}</div>{% endif %}
-            {% if item.customer_part_no %}<div class="hsn-code">CPN: {{ item.customer_part_no }}</div>{% endif %}
+            <div class="hsn-code">HSN: {{ item.hsn_code|default:"—" }}</div>
         </td>
         <td>
             <div class="part-name">{{ item.description }}</div>
             {% if item.job_code %}<div class="job-code">Job: {{ item.job_code }}</div>{% endif %}
         </td>
-        <td class="c">{{ item.quantity }}</td>
-        <td class="c">{{ item.unit }}</td>
+        <td class="c">
+            <div>{{ item.quantity }}</div>
+            <div style="font-size: 8px; color: #666; margin-top: 2px; font-weight: 500;">{{ item.unit }}</div>
+        </td>
         <td class="r">{{ item.unit_price|floatformat:2 }}</td>
         <td class="r">{{ item.amount|floatformat:2 }}</td>
         <td class="c">{{ item.tax_percent }}%</td>
-        <td class="r"><strong>{{ item.line_total|floatformat:2 }}</strong></td>
+        <td class="r">{{ item.line_total|floatformat:2 }}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="9" class="c" style="padding:25px">No line items</td></tr>
+        <tr><td colspan="8" class="c" style="padding:25px">No line items</td></tr>
         {% endfor %}
     </tbody>
     </table>
@@ -722,19 +755,7 @@
   </div>
   {% endif %}
 
-  <!-- NOTES / ADDITIONAL INFO -->
-  <div class="notes-section">
-    <div class="section-title">ADDITIONAL INFORMATION</div>
-    <div class="notes-box">
-      <ul>
-        <li>All prices are ex-works Pune unless otherwise agreed in writing.</li>
-        <li>Delivery timeline will be confirmed within 48 hours of payment confirmation.</li>
-        <li>Material traceability and inspection reports provided with every supply.</li>
-        <li>Standard packing included. Special packing / export packing available on request.</li>
-        <li>Subject to our standard terms &amp; conditions of sale.</li>
-      </ul>
-    </div>
-  </div>
+
 
   <!-- PAGE BREAK: Bank details on new page -->
   <div class="page-break-before"></div>

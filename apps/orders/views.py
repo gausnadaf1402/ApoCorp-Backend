@@ -10,13 +10,14 @@ from core.viewsets import TenantModelViewSet
 from core.mixins import ModelPermissionMixin
 from apps.accounts.models import TenantUser
 
-from .models import OrderAcknowledgement, OALineItem, Order
-from .serializers import OrderAcknowledgementSerializer, OrderSerializer, OrderDetailSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import OrderAcknowledgement, OALineItem, Order, OAAttachment
+from .serializers import OrderAcknowledgementSerializer, OrderSerializer, OrderDetailSerializer, OAAttachmentSerializer
 
 
 class OrderAcknowledgementViewSet(ModelPermissionMixin, TenantModelViewSet):
 
-    queryset = OrderAcknowledgement.objects.all()
+    queryset = OrderAcknowledgement.objects.all().order_by('-created_at')
     serializer_class = OrderAcknowledgementSerializer
     permission_classes = [IsAuthenticated]
 
@@ -240,6 +241,19 @@ class OrderAcknowledgementViewSet(ModelPermissionMixin, TenantModelViewSet):
             "order_number": order.order_number,
         })
 
+    @action(detail=True, methods=["post"], parser_classes=[MultiPartParser, FormParser])
+    def upload_file(self, request, pk=None):
+        oa = self.get_object()
+        file_obj = request.FILES.get("file")
+        if not file_obj:
+            return Response({"error": "No file provided"}, status=400)
+
+        attachment = OAAttachment.objects.create(oa=oa, file=file_obj)
+        oa.last_activity_at = timezone.now()
+        oa.save(update_fields=['last_activity_at'])
+
+        return Response(OAAttachmentSerializer(attachment, context={"request": request}).data)
+
 
 class OrderViewSet(ModelPermissionMixin, TenantModelViewSet):
 
@@ -361,3 +375,11 @@ class OrderViewSet(ModelPermissionMixin, TenantModelViewSet):
             'completion_percentage': round((total_shipped_float / total_qty_float * 100), 2) if total_qty_float > 0 else 0,
             'line_items': line_items_summary
         })
+
+
+from rest_framework.viewsets import ModelViewSet
+
+class OAAttachmentViewSet(ModelViewSet):
+    queryset = OAAttachment.objects.all()
+    serializer_class = OAAttachmentSerializer
+    permission_classes = [IsAuthenticated]

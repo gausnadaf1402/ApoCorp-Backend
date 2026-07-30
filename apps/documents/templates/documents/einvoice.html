@@ -531,35 +531,6 @@
 
   </div>
 
-  <!-- ── TRANSPORT / DISPATCH DETAILS ─────────────────────────────────────
-       Rule 46 requires these whenever goods are moved by road/rail/air,
-       independent of whether a separate e-way bill is generated. Hidden
-       entirely when the invoice has no transport data (e.g. services). -->
-  {% if transporter_name or vehicle_number or lr_number or mode_of_transport or date_of_removal %}
-  <div class="meta-strip">
-    <div class="meta-cell">
-      <div class="meta-key">Transporter</div>
-      <div class="meta-val muted">{{ transporter_name|default:"—" }}</div>
-    </div>
-    <div class="meta-cell">
-      <div class="meta-key">Vehicle No.</div>
-      <div class="meta-val muted">{{ vehicle_number|default:"—" }}</div>
-    </div>
-    <div class="meta-cell">
-      <div class="meta-key">Mode of Transport</div>
-      <div class="meta-val muted">{{ mode_of_transport|default:"—" }}</div>
-    </div>
-    <div class="meta-cell">
-      <div class="meta-key">LR No.</div>
-      <div class="meta-val muted">{{ lr_number|default:"—" }}</div>
-    </div>
-    <div class="meta-cell">
-      <div class="meta-key">Removal Date / Time</div>
-      <div class="meta-val muted">{{ date_of_removal|default:"—" }}{% if time_of_removal and time_of_removal != "—" %} · {{ time_of_removal }}{% endif %}</div>
-    </div>
-  </div>
-  {% endif %}
-
   <!-- ── ADDRESSES ─────────────────────────────────────────────────────── -->
   <div class="address-row">
 
@@ -581,17 +552,12 @@
     <div class="address-col">
       <div class="addr-label">Bill To</div>
       {% with bill_to as addr %}
-        <div class="addr-name">{{ addr.entity_name|default:customer_name }}</div>
+        <div class="addr-name">{{ addr.company_name|default:customer_name }}</div>
         {% if addr.address_line %}
           <div class="addr-line">{{ addr.address_line }}</div>
         {% endif %}
-        {% if addr.city or addr.state or addr.pincode %}
-          <div class="addr-line">
-            {{ addr.city }}{% if addr.city and addr.state %}, {% endif %}{{ addr.state }}{% if addr.pincode %} — {{ addr.pincode }}{% endif %}
-          </div>
-        {% endif %}
-        {% if invoice.consignee_gst %}
-          <div class="addr-gst">GSTIN: {{ invoice.consignee_gst }}</div>
+        {% if addr.state_code %}
+          <div class="addr-gst">State Code: {{ addr.state_code }}</div>
         {% endif %}
       {% endwith %}
     </div>
@@ -600,14 +566,9 @@
     <div class="address-col">
       <div class="addr-label">Ship To</div>
       {% with ship_to as addr %}
-        <div class="addr-name">{{ addr.entity_name|default:customer_name }}</div>
+        <div class="addr-name">{{ addr.company_name|default:customer_name }}</div>
         {% if addr.address_line %}
           <div class="addr-line">{{ addr.address_line }}</div>
-        {% endif %}
-        {% if addr.city or addr.state or addr.pincode %}
-          <div class="addr-line">
-            {{ addr.city }}{% if addr.city and addr.state %}, {% endif %}{{ addr.state }}{% if addr.pincode %} — {{ addr.pincode }}{% endif %}
-          </div>
         {% endif %}
       {% endwith %}
     </div>
