@@ -708,6 +708,13 @@ def _build_oa_context(oa: OrderAcknowledgement) -> dict:
         'ld_clause': get_term('ld_clause') or 'Not Applicable',
         'validity': get_term('validity'),
         'remarks': get_term('remarks'),
+        'price_validity': get_term('price_validity'),
+        'po_cancellation': get_term('po_cancellation'),
+        'ordering_info': get_term('ordering_info'),
+        'force_majeure': get_term('force_majeure'),
+        'cost_over_run': get_term('cost_over_run'),
+        'late_delivery_charges': get_term('late_delivery_charges'),
+        'country_origin_material_certs': get_term('country_origin_material_certs'),
     }
 
     return {

@@ -822,6 +822,27 @@
     {% if commercial.ld_clause %}
     <div class="term-item"><div class="term-key">LD Clause</div><div class="term-value">{{ commercial.ld_clause }}</div></div>
     {% endif %}
+    {% if commercial.price_validity %}
+    <div class="term-item"><div class="term-key">Price Validity</div><div class="term-value">{{ commercial.price_validity }}</div></div>
+    {% endif %}
+    {% if commercial.po_cancellation %}
+    <div class="term-item"><div class="term-key">PO Cancellation</div><div class="term-value">{{ commercial.po_cancellation }}</div></div>
+    {% endif %}
+    {% if commercial.ordering_info %}
+    <div class="term-item"><div class="term-key">Ordering Information</div><div class="term-value" style="white-space: pre-wrap;">{{ commercial.ordering_info }}</div></div>
+    {% endif %}
+    {% if commercial.force_majeure %}
+    <div class="term-item"><div class="term-key">Force Majeure</div><div class="term-value" style="white-space: pre-wrap;">{{ commercial.force_majeure }}</div></div>
+    {% endif %}
+    {% if commercial.cost_over_run %}
+    <div class="term-item"><div class="term-key">Cost Over Run</div><div class="term-value">{{ commercial.cost_over_run }}</div></div>
+    {% endif %}
+    {% if commercial.late_delivery_charges %}
+    <div class="term-item"><div class="term-key">Late Delivery Charges</div><div class="term-value">{{ commercial.late_delivery_charges }}</div></div>
+    {% endif %}
+    {% if commercial.country_origin_material_certs %}
+    <div class="term-item"><div class="term-key">Country of Origin / Material Certificates</div><div class="term-value">{{ commercial.country_origin_material_certs }}</div></div>
+    {% endif %}
     {% if commercial.validity %}
     <div class="term-item"><div class="term-key">Validity</div><div class="term-value">{{ commercial.validity }}</div></div>
     {% endif %}

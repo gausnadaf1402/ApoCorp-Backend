@@ -1208,6 +1208,27 @@
       {% if terms.ld_clause %}
       <div class="term-item"><div class="term-key">LD Clause</div><div class="term-value">{{ terms.ld_clause }}</div></div>
       {% endif %}
+      {% if terms.price_validity %}
+      <div class="term-item"><div class="term-key">Price Validity</div><div class="term-value">{{ terms.price_validity }}</div></div>
+      {% endif %}
+      {% if terms.po_cancellation %}
+      <div class="term-item"><div class="term-key">PO Cancellation</div><div class="term-value">{{ terms.po_cancellation }}</div></div>
+      {% endif %}
+      {% if terms.ordering_info %}
+      <div class="term-item"><div class="term-key">Ordering Information</div><div class="term-value" style="white-space: pre-wrap;">{{ terms.ordering_info }}</div></div>
+      {% endif %}
+      {% if terms.force_majeure %}
+      <div class="term-item"><div class="term-key">Force Majeure</div><div class="term-value" style="white-space: pre-wrap;">{{ terms.force_majeure }}</div></div>
+      {% endif %}
+      {% if terms.cost_over_run %}
+      <div class="term-item"><div class="term-key">Cost Over Run</div><div class="term-value">{{ terms.cost_over_run }}</div></div>
+      {% endif %}
+      {% if terms.late_delivery_charges %}
+      <div class="term-item"><div class="term-key">Late Delivery Charges</div><div class="term-value">{{ terms.late_delivery_charges }}</div></div>
+      {% endif %}
+      {% if terms.country_origin_material_certs %}
+      <div class="term-item"><div class="term-key">Country of Origin / Material Certificates</div><div class="term-value">{{ terms.country_origin_material_certs }}</div></div>
+      {% endif %}
       {% if terms.validity %}
       <div class="term-item"><div class="term-key">Validity</div><div class="term-value">{{ terms.validity }}</div></div>
       {% endif %}

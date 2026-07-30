@@ -193,6 +193,15 @@ class QuotationTerms(models.Model):
     sd_format = models.CharField(max_length=100, blank=True)
     ld_clause = models.CharField(max_length=100, blank=True)
 
+    # ── 15-21 Extra Commercial Terms ──
+    price_validity = models.CharField(max_length=255, blank=True)
+    po_cancellation = models.CharField(max_length=255, blank=True)
+    ordering_info = models.TextField(blank=True)
+    force_majeure = models.TextField(blank=True)
+    cost_over_run = models.CharField(max_length=255, blank=True)
+    late_delivery_charges = models.CharField(max_length=255, blank=True)
+    country_origin_material_certs = models.CharField(max_length=255, blank=True)
+
     # ── Existing quotation-stage-only fields (unchanged) ──
     validity = models.TextField(blank=True)
     decision_expected = models.CharField(max_length=100, blank=True)
