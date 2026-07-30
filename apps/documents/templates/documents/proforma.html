@@ -17,8 +17,8 @@
       size: A4;
       margin-top: 58mm;
       margin-bottom: 28mm;
-      margin-left: 18mm;
-      margin-right: 18mm;
+      margin-left: 6mm;
+      margin-right: 6mm;
     }
 
     body {
@@ -92,17 +92,18 @@
 
     /* Address blocks */
     .address-row {
-      display: table;
+      display: flex;
+      justify-content: space-between;
       width: 100%;
-      margin-bottom: 28px;
-      gap: 22px;
+      margin-bottom: 24px;
+      gap: 15px;
     }
 
     .address-col {
-      display: table-cell;
-      width: 50%;
+      display: block;
+      width: 49%;
       vertical-align: top;
-      padding: 16px 18px;
+      padding: 14px 16px;
       border: 1px solid #d0d0d0;
       border-top: 4px solid #3a3a3a;
       background: #fafbfc;
@@ -155,35 +156,46 @@
     .items-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 9.8pt;
+      font-size: 9.8pt;       /* slightly smaller base for table */
       margin-bottom: 8px;
+      table-layout: fixed;
+      border: 1.5px solid #6f6f6f;
     }
 
     .items-table th {
       background: #2c2c2c;
       color: white;
-      padding: 11px 9px;
+      padding: 9px 6px;       /* slightly tighter padding */
       text-align: left;
       font-weight: 700;
-      font-size: 9.5px;
-      border-bottom: 3px solid #111;
+      font-size: 9pt;
+      border-top: 1px solid #3f3f3f;
+      border-bottom: 1px solid #6a6a6a;
+      border-right: 1px solid #4e4e4e;
+      border-left: 1px solid #4e4e4e;
     }
 
     .items-table th.r { text-align: right; }
     .items-table th.c { text-align: center; }
 
     .items-table td {
-      padding: 11px 9px;
-      border-bottom: 1px solid #e2e2e2;
+      padding: 9px 6px;
+      border: 1px solid #9a9a9a;
       vertical-align: top;
+      word-wrap: break-word;
+      word-break: break-word;
     }
 
     .items-table tr:nth-child(even) td {
-      background: #f7f8f9;
+      background: #f3f4f6;
     }
 
     .items-table td.r { text-align: right; }
     .items-table td.c { text-align: center; }
+
+    /* Fine adjustments for text alignment */
+    .items-table td.c, .items-table th.c { text-align: center; }
+    .items-table td.r, .items-table th.r { text-align: right; }
 
     .part-name {
       font-weight: 400;
@@ -823,13 +835,7 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <div class="footer">
-    <div class="footer-text">
-      📄 Computer generated proforma • {{ proforma_number }} • 
-      For queries: {{ company_email }}{% if company_phone %} • {{ company_phone }}{% endif %}
-    </div>
-  </div>
+
 </div>
 </body>
 </html>

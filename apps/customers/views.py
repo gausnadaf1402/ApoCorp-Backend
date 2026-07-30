@@ -2,6 +2,7 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from datetime import timedelta
 from django.db.models import Q, Sum, Count, Avg
 from django.utils import timezone
 from django.core.cache import cache
@@ -111,6 +112,25 @@ class CustomerViewSet(ModelPermissionMixin, TenantModelViewSet):
         
         # Offshore: country exists and is not India
         offshore = qs.exclude(country__iexact='india').exclude(country='').count()
+
+        # Calculate historical stats (30 days ago) using created_at
+        past_month_date = timezone.now() - timedelta(days=30)
+        qs_past = qs.filter(created_at__lte=past_month_date)
+
+        active_past = qs_past.filter(is_active=True, is_locked=False).count()
+        inactive_past = qs_past.filter(Q(is_locked=True) | Q(is_active=False)).count()
+        domestic_past = qs_past.filter(country__iexact='india').count()
+        offshore_past = qs_past.exclude(country__iexact='india').exclude(country='').count()
+
+        def get_percentage_change(current, past):
+            if past == 0:
+                return 0 if current == 0 else 100
+            return round(((current - past) / past) * 100)
+
+        active_change = get_percentage_change(active, active_past)
+        inactive_change = get_percentage_change(inactive, inactive_past)
+        domestic_change = get_percentage_change(domestic, domestic_past)
+        offshore_change = get_percentage_change(offshore, offshore_past)
         
         # Optional: Tier breakdown for additional insights
         tier_breakdown = {
@@ -124,9 +144,13 @@ class CustomerViewSet(ModelPermissionMixin, TenantModelViewSet):
         
         response_data = {
             "active": active,
+            "active_change": active_change,
             "inactive": inactive,
+            "inactive_change": inactive_change,
             "domestic": domestic,
+            "domestic_change": domestic_change,
             "offshore": offshore,
+            "offshore_change": offshore_change,
             "total": total,
             "tier_breakdown": tier_breakdown,
             "total_lifetime_value": float(total_lifetime_value),
